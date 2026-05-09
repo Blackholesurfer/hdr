@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Lensing · 3D Walkthrough</title>
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; background: #0a0a0c; color: #e8e8ec;
+            font-family: -apple-system, Helvetica, Arial, sans-serif; overflow: hidden; }
+        pc-app { display: block; width: 100vw; height: 100vh; }
+        header { position: fixed; top: 0; left: 0; right: 0; padding: 12px 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0)); z-index: 10;
+            display: flex; align-items: center; gap: 16px; pointer-events: none; }
+        header img { height: 36px; background: #fff; padding: 3px 6px; border-radius: 4px; pointer-events: auto; }
+        header h1 { margin: 0; font-weight: 300; font-size: 16px; letter-spacing: 0.05em; }
+        header a { color: #9fd3ff; text-decoration: none; font-size: 12px; pointer-events: auto; }
+        .hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            padding: 8px 14px; background: rgba(0,0,0,0.55); border-radius: 999px;
+            font-size: 12px; letter-spacing: 0.04em; z-index: 10; }
+        .loader { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+            background: #0a0a0c; z-index: 20; font-size: 13px; color: #9a9aa6; }
+        .missing-card { max-width: 540px; padding: 28px; border: 1px solid #2a2a32; border-radius: 12px;
+            background: #14141a; color: #e8e8ec; }
+        .missing-card h2 { margin: 0 0 8px; font-weight: 400; font-size: 18px; }
+        .missing-card p { color: #9a9aa6; font-size: 13px; line-height: 1.55; margin: 8px 0; }
+        .missing-card code { background: #20202a; padding: 2px 6px; border-radius: 4px;
+            font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px;
+            word-break: break-all; }
+        .missing-card a { color: #9fd3ff; }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.15.0/build/playcanvas.mjs"
+        }
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <img src="/bhs_logo.jpg" alt="BHS">
+        <div>
+            <h1>3D Walkthrough</h1>
+            <a href="/showcase.html">← back to video showcase</a>
+        </div>
+    </header>
+
+    <div id="loader" class="loader">loading…</div>
+
+    <pc-app id="app" antialias="false" depth="false" high-resolution="false" stencil="false" hidden>
+        <pc-asset src="https://cdn.jsdelivr.net/npm/playcanvas@2.15.0/scripts/esm/camera-controls.mjs"></pc-asset>
+        <pc-asset id="splat-asset"></pc-asset>
+        <pc-scene>
+            <pc-entity name="camera-root">
+                <pc-entity name="camera" position="0 1.6 4">
+                    <pc-camera clear-color="0.04 0.04 0.05 1"></pc-camera>
+                    <pc-scripts>
+                        <pc-script name="cameraControls" attributes='{
+                            "enableFly": true,
+                            "enablePan": true,
+                            "focusPoint": "vec3:0,1.6,0",
+                            "pitchRange": "vec2:-89,89",
+                            "sceneSize": 5,
+                            "zoomRange": "vec2:0.1,20"
+                        }'></pc-script>
+                    </pc-scripts>
+                </pc-entity>
+            </pc-entity>
+            <pc-entity name="scene-splat">
+                <pc-splat asset="splat-asset"></pc-splat>
+            </pc-entity>
+        </pc-scene>
+    </pc-app>
+
+    <div class="hint" id="hint" hidden>WASD or arrows to walk · drag to look · scroll to zoom</div>
+
+    <script type="module">
+        const PWC_URL = 'https://cdn.jsdelivr.net/npm/@playcanvas/web-components@0.3.0/dist/pwc.mjs';
+
+        const params = new URLSearchParams(location.search);
+        const splatUrl = params.get('splat') || '/uploads/sample/scene.ply';
+        const isAbsolute = /^https?:\/\//i.test(splatUrl);
+
+        const showMissing = () => {
+            document.getElementById('loader').innerHTML = `
+                <div class="missing-card">
+                    <h2>No splat found</h2>
+                    <p>Expected file at <code>${splatUrl}</code></p>
+                    <p>Pass a URL directly: <code>?splat=https://example.com/scene.ply</code></p>
+                    <p>Try the demo: <a href="?splat=https://cdn.jsdelivr.net/gh/playcanvas/web-components@main/examples/assets/splats/biker.sog">biker.sog</a></p>
+                    <p>To make your own: scan a property in the free <strong>Polycam</strong> app, choose <em>Splat</em> mode, export <code>.ply</code>, drop it at <code>/uploads/sample/scene.ply</code>.</p>
+                </div>`;
+        };
+
+        // For same-origin URLs only, probe to give a helpful error before loading pwc.mjs.
+        // Cross-origin HEAD requests fail under CORS even when valid, so trust absolute URLs.
+        if (!isAbsolute) {
+            const probe = await fetch(splatUrl, { method: 'HEAD' }).catch(() => null);
+            if (!probe || !probe.ok) { showMissing(); throw new Error('splat not found'); }
+        }
+
+        // Set asset src BEFORE registering custom elements, so the upgrade picks it up.
+        document.getElementById('splat-asset').setAttribute('src', splatUrl);
+        document.getElementById('app').hidden = false;
+        document.getElementById('loader').remove();
+        document.getElementById('hint').hidden = false;
+
+        // Now load PlayCanvas web-components — this triggers the asset to load.
+        await import(PWC_URL);
+    </script>
+</body>
+</html>
