@@ -1,3 +1,27 @@
+# secrets
 gittoken
-gittoken
-gittoken
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# node
+node_modules/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# pipeline inputs/outputs (large, regeneratable, possibly private)
+uploads/
+images/
+images_enhanced/
+qualifiedimages/
+video_clips/
+video_clips_orig/
+final_video.mp4
+final_video_pp.mp4
+*.mp4.bak

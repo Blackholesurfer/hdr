@@ -3,7 +3,7 @@ from pathlib import Path
 import html
 from PIL import Image, ImageEnhance, ImageOps, ImageFilter
 
-BASE_DIR = Path("/var/opt/www")
+BASE_DIR = Path(__file__).parent
 IMG_DIR  = BASE_DIR / "images"
 OUT_DIR  = BASE_DIR / "images_enhanced"
 OUT_HTML = BASE_DIR / "index.html"

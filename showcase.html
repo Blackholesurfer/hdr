@@ -1,0 +1,933 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Image to Video Generation</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #0a0a0c;
+    --panel: #14141a;
+    --border: #2a2a32;
+    --text: #e8e8ec;
+    --muted: #9a9aa6;
+    --accent: #9fd3ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at 30% 20%, #1a1a24 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    overflow: hidden;
+  }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    grid-template-rows: auto auto auto auto 1fr auto auto;
+    height: 100vh;
+    gap: 12px;
+    padding: 16px;
+  }
+  .history { grid-row: 3; }
+  .thumb-strip {
+    grid-column: 1 / 3;
+    grid-row: 6;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    scrollbar-width: thin;
+  }
+  .thumb-strip::-webkit-scrollbar { height: 8px; }
+  .thumb-strip::-webkit-scrollbar-thumb { background: #2a2a32; border-radius: 4px; }
+  .thumb {
+    flex: 0 0 auto;
+    width: 84px;
+    height: 56px;
+    object-fit: cover;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.15s, border-color 0.15s, transform 0.15s;
+  }
+  .thumb:hover { opacity: 1; transform: translateY(-1px); }
+  .thumb.active { border-color: var(--accent); opacity: 1; }
+  .caption {
+    grid-column: 1 / 3;
+    grid-row: 4;
+    text-align: center;
+    color: #ffffff;
+    font-family: Tahoma, "Trebuchet MS", Geneva, sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    padding: 4px;
+  }
+
+  header {
+    grid-column: 1 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 4px;
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 300;
+    font-size: 20px;
+    letter-spacing: 0.06em;
+  }
+  header h1 span { color: var(--accent); }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .controls input[type="text"] {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 8px;
+    width: 240px;
+    font-size: 12px;
+  }
+  .controls input[type="range"] {
+    accent-color: var(--accent);
+    width: 110px;
+  }
+  .controls .vol {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .brand img {
+    height: 38px;
+    width: auto;
+    border-radius: 4px;
+    background: #fff;
+    padding: 4px 8px;
+  }
+
+  .upload-bar {
+    grid-column: 1 / 3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    flex-wrap: wrap;
+  }
+  .upload-bar label.file-label {
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    color: var(--muted);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .upload-bar label.file-label:hover { color: var(--accent); border-color: var(--accent); }
+  .upload-bar #upload-status { color: var(--muted); font-size: 12px; }
+  .upload-bar #upload-link { color: var(--accent); font-size: 12px; text-decoration: none; }
+  .upload-bar #upload-link:hover { text-decoration: underline; }
+  .upload-bar .spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+  }
+  .upload-bar.busy .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .history {
+    grid-column: 1 / 3;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow-x: auto;
+  }
+  .history .label { color: var(--muted); font-size: 12px; flex-shrink: 0; }
+  .history.empty { display: none; }
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    flex-shrink: 0;
+    font-size: 12px;
+  }
+  .history-item.active { border-color: var(--accent); }
+  .history-item .ts { color: var(--text); white-space: nowrap; }
+  .history-item .meta { color: var(--muted); white-space: nowrap; }
+  .history-item .actions { display: flex; gap: 4px; }
+  .history-item .actions .btn { padding: 4px 8px; font-size: 11px; }
+  .btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .btn:hover { border-color: #555; }
+
+  .video-wrap {
+    grid-column: 1;
+    grid-row: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  .video-wrap video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+  }
+  .video-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 18px 24px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.72), rgba(0,0,0,0));
+    color: #fff;
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    pointer-events: none;
+  }
+  .video-overlay .agent { color: #fff; font-weight: 500; }
+  .video-overlay .phone { color: #9fd3ff; font-weight: 500; }
+  .video-overlay.hidden { display: none; }
+  .video-poster {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+    opacity: 1;
+    transition: opacity 0.9s ease-in-out;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .video-poster.hidden { opacity: 0; }
+  .made-by {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 56px;
+    text-align: center;
+    font-family: Tahoma, "Trebuchet MS", Geneva, sans-serif;
+    font-weight: 900;
+    font-size: clamp(28px, 4.5vw, 64px);
+    letter-spacing: 0.06em;
+    color: #000;
+    text-shadow: 0 2px 6px rgba(255, 255, 255, 0.45);
+    pointer-events: none;
+    line-height: 1.05;
+  }
+
+  .slideshow {
+    grid-column: 2;
+    grid-row: 5;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .slideshow .frame {
+    flex: 1;
+    position: relative;
+    background: #000;
+  }
+  .slideshow img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 1.2s ease-in-out;
+  }
+  .slideshow img.active { opacity: 1; }
+  .slideshow .meta {
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .slideshow .meta .name {
+    color: var(--accent);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 70%;
+  }
+
+  footer {
+    grid-column: 1 / 3;
+    grid-row: 7;
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Hidden YouTube audio player */
+  #yt-host {
+    position: fixed;
+    width: 1px;
+    height: 1px;
+    left: -10px;
+    top: -10px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Start overlay (browsers block autoplay-with-sound until interaction) */
+  #start {
+    position: fixed;
+    inset: 0;
+    background: rgba(8, 8, 12, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 50;
+    cursor: pointer;
+    backdrop-filter: blur(6px);
+  }
+  #start h2 {
+    font-weight: 200;
+    letter-spacing: 0.15em;
+    margin: 0;
+    font-size: 28px;
+  }
+  #start p {
+    color: var(--muted);
+    margin: 0;
+    font-size: 13px;
+  }
+  #start .play {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-top: 10px;
+  }
+  #start.hidden { display: none; }
+
+  @media (max-width: 900px) {
+    .stage { grid-template-columns: 1fr; grid-template-rows: auto auto auto auto auto 1fr auto auto; }
+    .upload-bar { grid-column: 1; }
+    .history { grid-column: 1; grid-row: 3; }
+    .caption { grid-column: 1; grid-row: 4; }
+    .video-wrap { grid-column: 1; grid-row: 5; }
+    .slideshow { grid-column: 1; grid-row: 6; min-height: 300px; }
+    .thumb-strip { grid-column: 1; grid-row: 7; }
+    footer { grid-row: 8; }
+    .controls input[type="text"] { width: 180px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <header>
+    <div class="brand">
+      <img src="bhs_logo.jpg" alt="BHS">
+      <h1>IMAGE TO VIDEO <span>·</span> GENERATION</h1>
+    </div>
+    <div class="controls">
+      <input id="yt-url" type="text" placeholder="Paste YouTube URL (Eine kleine Nachtmusik)">
+      <button class="btn" id="yt-set">Set music</button>
+      <span class="vol">
+        Vol
+        <input id="vol-slider" type="range" min="0" max="100" step="1" value="60">
+        <span id="vol-val">60</span>
+      </span>
+      <button class="btn" id="mute-toggle">Mute</button>
+      <a class="btn" href="admin.html" style="text-decoration:none">Admin</a>
+    </div>
+  </header>
+
+  <div class="upload-bar">
+    <label class="file-label" for="file-input">Choose images to upload + generate new video</label>
+    <input id="file-input" type="file" accept="image/jpeg,image/png,image/webp" multiple style="display:none">
+    <button class="btn" id="upload-btn" disabled>Upload &amp; Generate</button>
+    <span class="spinner"></span>
+    <span id="upload-status">No files selected.</span>
+    <a id="upload-link" href="#" target="_blank" rel="noopener" style="display:none">Open generated video →</a>
+    <button class="btn" id="history-refresh" title="Refresh history" style="padding:6px 10px;">⟳</button>
+    <span style="flex:1"></span>
+    <input id="agent-name" type="text" placeholder="Agent name" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;width:160px;font-size:12px;">
+    <input id="agent-phone" type="text" placeholder="Phone (e.g. (555) 123-4567)" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;width:200px;font-size:12px;">
+  </div>
+
+  <div class="history empty" id="history">
+    <span class="label">Generated videos:</span>
+  </div>
+
+  <div class="caption">Video and images demonstrate the source image and video that was generated from it</div>
+
+  <div class="video-wrap">
+    <video id="main-video" src="final_video_pp.mp4" autoplay loop playsinline controls></video>
+    <img class="video-poster" id="video-poster" alt="">
+    <div class="made-by">Made by HDR Inc.</div>
+    <div class="video-overlay" id="video-overlay">
+      Call your real estate agent <span class="agent" id="overlay-agent">Daniel Hudsky</span>
+      at <span class="phone" id="overlay-phone">(555) 123-4567</span>
+    </div>
+  </div>
+
+  <div class="slideshow">
+    <div class="frame" id="frame"></div>
+    <div class="meta">
+      <span class="name" id="slide-name">—</span>
+      <span id="slide-counter">0 / 0</span>
+    </div>
+  </div>
+
+  <div class="thumb-strip" id="thumb-strip"></div>
+
+  <footer>final_video.mp4 · slideshow from /images · background: Mozart, Eine kleine Nachtmusik (K. 525)</footer>
+</div>
+
+<div id="yt-host"></div>
+
+<div id="start">
+  <h2>IMAGE TO VIDEO GENERATION</h2>
+  <p>Click anywhere to begin · video + slideshow + Mozart</p>
+  <div class="play">▶</div>
+</div>
+
+<script>
+  // -------- Image list (from /Users/danielhudsky/lab/lensing/images) --------
+  const IMAGES = [
+    "001_Jorge Tinajero - IMG_0083.jpg","002_Jorge Tinajero - IMG_0002.jpg","003_Jorge Tinajero - IMG_0005.jpg",
+    "004_Jorge Tinajero - IMG_0023.jpg","005_Jorge Tinajero - IMG_0035.jpg","006_Jorge Tinajero - IMG_0056.jpg",
+    "007_Jorge Tinajero - IMG_0068.jpg","008_Jorge Tinajero - IMG_0074.jpg","009_Jorge Tinajero - IMG_0077.jpg",
+    "010_Jorge Tinajero - IMG_0080.jpg","011_Jorge Tinajero - IMG_0086.jpg","012_Jorge Tinajero - IMG_0089.jpg",
+    "013_Jorge Tinajero - IMG_0095.jpg","014_Jorge Tinajero - IMG_0098.jpg","015_Jorge Tinajero - IMG_0101.jpg",
+    "016_Jorge Tinajero - IMG_0104.jpg","017_Jorge Tinajero - IMG_0113.jpg","018_Jorge Tinajero - IMG_0116.jpg",
+    "019_Jorge Tinajero - IMG_0119.jpg","020_Jorge Tinajero - IMG_0122.jpg","021_Jorge Tinajero - IMG_0176.jpg",
+    "022_Jorge Tinajero - IMG_0128.jpg","023_Jorge Tinajero - IMG_0131.jpg","024_Jorge Tinajero - IMG_0134.jpg",
+    "025_Jorge Tinajero - IMG_0137.jpg","026_Jorge Tinajero - IMG_0140.jpg","027_Jorge Tinajero - IMG_0143.jpg",
+    "028_Jorge Tinajero - IMG_0146.jpg","029_Jorge Tinajero - IMG_0149.jpg","030_Jorge Tinajero - IMG_0227.jpg",
+    "031_Jorge Tinajero - IMG_0230.jpg","032_Jorge Tinajero - IMG_0152.jpg","033_Jorge Tinajero - IMG_0155.jpg",
+    "034_Jorge Tinajero - IMG_0224.jpg","035_Jorge Tinajero - IMG_0107.jpg","036_Jorge Tinajero - IMG_0110.jpg",
+    "037_Jorge Tinajero - IMG_0218.jpg","038_Jorge Tinajero - IMG_0221.jpg","039_Jorge Tinajero - IMG_0158.jpg",
+    "040_Jorge Tinajero - IMG_0161.jpg","041_Jorge Tinajero - IMG_0164.jpg","042_Jorge Tinajero - IMG_0167.jpg",
+    "043_Jorge Tinajero - IMG_0170.jpg","044_Jorge Tinajero - IMG_0173.jpg","045_Jorge Tinajero - IMG_0197.jpg",
+    "046_Jorge Tinajero - IMG_0200.jpg","047_Jorge Tinajero - IMG_0203.jpg","048_Jorge Tinajero - IMG_0206.jpg",
+    "049_Jorge Tinajero - IMG_0209.jpg","050_Jorge Tinajero - IMG_0191.jpg","051_Jorge Tinajero - IMG_0125.jpg",
+    "052_Jorge Tinajero - IMG_0182.jpg","053_Jorge Tinajero - IMG_0185.jpg","054_Jorge Tinajero - IMG_0188.jpg",
+    "055_Jorge Tinajero - IMG_0212.jpg","056_Jorge Tinajero - IMG_0233.jpg","057_Jorge Tinajero - IMG_0236.jpg",
+    "058_Jorge Tinajero - IMG_0017.jpg","059_Jorge Tinajero - IMG_0239.jpg","060_Jorge Tinajero - IMG_0011.jpg",
+    "061_Jorge Tinajero - IMG_0020.jpg","062_Jorge Tinajero - IMG_0029.jpg","063_Jorge Tinajero - IMG_0032.jpg",
+    "064_Jorge Tinajero - IMG_0038.jpg","065_Jorge Tinajero - IMG_0041.jpg","066_Jorge Tinajero - IMG_0044.jpg",
+    "067_Jorge Tinajero - IMG_0047.jpg","068_Jorge Tinajero - IMG_0053.jpg","069_Jorge Tinajero - IMG_0059.jpg",
+    "070_Jorge Tinajero - IMG_0062.jpg","071_Jorge Tinajero - IMG_0065.jpg","072_Jorge Tinajero - IMG_0071.jpg",
+    "073_Jorge Tinajero - IMG_0092.jpg","074_Jorge Tinajero - IMG_0179.jpg","075_Jorge Tinajero - IMG_0194.jpg",
+    "076_Jorge Tinajero - IMG_0215.jpg","077_Jorge Tinajero - IMG_0008.jpg","078_Jorge Tinajero - IMG_0014.jpg",
+    "079_Jorge Tinajero - IMG_0026.jpg","080_Jorge Tinajero - IMG_0050.jpg"
+  ];
+
+  // -------- Random video thumbnail / splash --------
+  const randomImg = IMAGES[Math.floor(Math.random() * IMAGES.length)];
+  const randomImgUrl = "images/" + encodeURI(randomImg);
+  const mainVideo = document.getElementById("main-video");
+  const videoPoster = document.getElementById("video-poster");
+  mainVideo.setAttribute("poster", randomImgUrl);
+  videoPoster.src = randomImgUrl;
+  // Fade the splash image out 3s after playback actually starts.
+  mainVideo.addEventListener("playing", () => {
+    setTimeout(() => videoPoster.classList.add("hidden"), 3000);
+  }, { once: true });
+
+  // -------- Slideshow --------
+  const frame = document.getElementById("frame");
+  const slideName = document.getElementById("slide-name");
+  const slideCounter = document.getElementById("slide-counter");
+  const SLIDE_MS = 4500;
+
+  // Pre-create two img tags and crossfade between them.
+  const a = document.createElement("img");
+  const b = document.createElement("img");
+  frame.appendChild(a);
+  frame.appendChild(b);
+  let active = a, idle = b, idx = 0;
+
+  let slideTimer = null;
+
+  function showSlide(i) {
+    const src = "images/" + encodeURI(IMAGES[i]);
+    idle.src = src;
+    idle.onload = () => {
+      active.classList.remove("active");
+      idle.classList.add("active");
+      [active, idle] = [idle, active];
+      slideName.textContent = IMAGES[i];
+      slideCounter.textContent = (i + 1) + " / " + IMAGES.length;
+      // Highlight current thumbnail and ensure it's in view.
+      document.querySelectorAll(".thumb").forEach(t => t.classList.toggle("active", Number(t.dataset.idx) === i));
+      const cur = document.querySelector(`.thumb[data-idx="${i}"]`);
+      if (cur) cur.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+    };
+  }
+
+  function scheduleNext(delay) {
+    clearTimeout(slideTimer);
+    slideTimer = setTimeout(() => {
+      idx = (idx + 1) % IMAGES.length;
+      showSlide(idx);
+      scheduleNext(SLIDE_MS);
+    }, delay);
+  }
+
+  function jumpToSlide(i) {
+    idx = i;
+    showSlide(i);
+    // Pause auto-advance, then resume after 4 seconds on the next slide.
+    scheduleNext(4000);
+  }
+
+  function startSlideshow() {
+    showSlide(idx);
+    scheduleNext(SLIDE_MS);
+  }
+
+  // -------- Thumbnail strip --------
+  const thumbStrip = document.getElementById("thumb-strip");
+  IMAGES.forEach((name, i) => {
+    const t = document.createElement("img");
+    t.className = "thumb";
+    t.src = "images/" + encodeURI(name);
+    t.dataset.idx = i;
+    t.title = name;
+    t.loading = "lazy";
+    t.addEventListener("click", () => jumpToSlide(i));
+    thumbStrip.appendChild(t);
+  });
+
+  // -------- YouTube background audio --------
+  // We use the iframe API so we can mute/unmute and ensure autoplay survives
+  // browser policies after the user clicks the start overlay.
+  const YT_KEY = "lensing.ytUrl";
+  const ytInput = document.getElementById("yt-url");
+  const ytSet = document.getElementById("yt-set");
+  const muteBtn = document.getElementById("mute-toggle");
+  const ytHost = document.getElementById("yt-host");
+
+  let ytPlayer = null;
+  let ytMuted = false;
+  let ytVolume = Number(localStorage.getItem("lensing.ytVolume") ?? 60);
+
+  function extractVideoId(input) {
+    if (!input) return null;
+    const trimmed = input.trim();
+    // Already an 11-char id?
+    if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) return trimmed;
+    try {
+      const url = new URL(trimmed);
+      if (url.hostname.includes("youtu.be")) {
+        return url.pathname.replace(/^\//, "").split("/")[0];
+      }
+      if (url.searchParams.get("v")) return url.searchParams.get("v");
+      // /embed/ID or /shorts/ID
+      const parts = url.pathname.split("/").filter(Boolean);
+      const tail = parts[parts.length - 1];
+      if (tail && /^[A-Za-z0-9_-]{11}$/.test(tail)) return tail;
+    } catch (_) {}
+    return null;
+  }
+
+  function loadYouTubeAPI() {
+    return new Promise(resolve => {
+      if (window.YT && window.YT.Player) return resolve();
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      window.onYouTubeIframeAPIReady = () => resolve();
+      document.head.appendChild(tag);
+    });
+  }
+
+  async function startMusic(videoId) {
+    if (!videoId) return;
+    await loadYouTubeAPI();
+    ytHost.innerHTML = '<div id="yt-frame"></div>';
+    ytPlayer = new YT.Player("yt-frame", {
+      width: "1",
+      height: "1",
+      videoId: videoId,
+      playerVars: { autoplay: 1, controls: 0, loop: 1, playlist: videoId, modestbranding: 1, rel: 0 },
+      events: {
+        onReady: e => { e.target.setVolume(ytVolume); e.target.playVideo(); },
+        onStateChange: e => { if (e.data === YT.PlayerState.ENDED) e.target.playVideo(); }
+      }
+    });
+  }
+
+  ytSet.addEventListener("click", () => {
+    const id = extractVideoId(ytInput.value);
+    if (!id) { alert("Could not parse a YouTube video ID from that URL."); return; }
+    localStorage.setItem(YT_KEY, ytInput.value.trim());
+    if (ytPlayer && ytPlayer.loadVideoById) {
+      ytPlayer.loadVideoById({ videoId: id });
+    } else {
+      startMusic(id);
+    }
+  });
+
+  muteBtn.addEventListener("click", () => {
+    if (!ytPlayer) return;
+    ytMuted = !ytMuted;
+    if (ytMuted) { ytPlayer.mute(); muteBtn.textContent = "Unmute"; }
+    else { ytPlayer.unMute(); muteBtn.textContent = "Mute"; }
+  });
+
+  // -------- Volume slider --------
+  const volSlider = document.getElementById("vol-slider");
+  const volVal = document.getElementById("vol-val");
+  volSlider.value = ytVolume;
+  volVal.textContent = ytVolume;
+  volSlider.addEventListener("input", () => {
+    ytVolume = Number(volSlider.value);
+    volVal.textContent = ytVolume;
+    localStorage.setItem("lensing.ytVolume", String(ytVolume));
+    if (ytPlayer && ytPlayer.setVolume) ytPlayer.setVolume(ytVolume);
+    if (ytPlayer) {
+      if (ytVolume === 0) { ytPlayer.mute(); ytMuted = true; muteBtn.textContent = "Unmute"; }
+      else if (ytMuted) { ytPlayer.unMute(); ytMuted = false; muteBtn.textContent = "Mute"; }
+    }
+  });
+
+  // -------- Agent overlay --------
+  const AGENT_NAME_KEY = "lensing.agentName";
+  const AGENT_PHONE_KEY = "lensing.agentPhone";
+  const agentNameInput = document.getElementById("agent-name");
+  const agentPhoneInput = document.getElementById("agent-phone");
+  const overlayAgent = document.getElementById("overlay-agent");
+  const overlayPhone = document.getElementById("overlay-phone");
+  const overlay = document.getElementById("video-overlay");
+
+  function syncOverlay() {
+    const name = (agentNameInput.value || "").trim();
+    const phone = (agentPhoneInput.value || "").trim();
+    overlayAgent.textContent = name || "your agent";
+    overlayPhone.textContent = phone || "—";
+    overlay.classList.toggle("hidden", !name && !phone);
+  }
+  agentNameInput.value = localStorage.getItem(AGENT_NAME_KEY) || "";
+  agentPhoneInput.value = localStorage.getItem(AGENT_PHONE_KEY) || "";
+  agentNameInput.addEventListener("input", () => {
+    localStorage.setItem(AGENT_NAME_KEY, agentNameInput.value);
+    syncOverlay();
+  });
+  agentPhoneInput.addEventListener("input", () => {
+    localStorage.setItem(AGENT_PHONE_KEY, agentPhoneInput.value);
+    syncOverlay();
+  });
+  syncOverlay();
+
+  // -------- API base URL (lets the static page call a remote Flask backend) --------
+  // If empty, requests go to the same origin (works when server.py serves the
+  // page directly, e.g. local dev or a same-host Apache reverse proxy).
+  // If set, e.g. "https://api.blackholesurfer.com", uploads are sent there and
+  // CORS must allow the page's origin.
+  const API_BASE_KEY = "lensing.apiBase";
+  function apiBase() {
+    return (localStorage.getItem(API_BASE_KEY) || "").replace(/\/$/, "");
+  }
+  // expose a tiny helper so you can configure from the browser console:
+  //   setApiBase("https://your-flask-host")
+  window.setApiBase = (url) => {
+    localStorage.setItem(API_BASE_KEY, (url || "").trim());
+    console.log("API base set to:", apiBase() || "(same origin)");
+  };
+  window.getApiBase = () => apiBase();
+
+  // -------- Upload + reprocess --------
+  const fileInput = document.getElementById("file-input");
+  const uploadBtn = document.getElementById("upload-btn");
+  const uploadStatus = document.getElementById("upload-status");
+  const uploadLink = document.getElementById("upload-link");
+  const uploadBar = document.querySelector(".upload-bar");
+
+  fileInput.addEventListener("change", () => {
+    const n = fileInput.files.length;
+    uploadBtn.disabled = n === 0;
+    uploadStatus.textContent = n === 0 ? "No files selected." : `${n} file${n === 1 ? "" : "s"} ready.`;
+    uploadLink.style.display = "none";
+  });
+
+  function describeStage(stage, info) {
+    if (!stage) return "Working…";
+    const t = info?.total, s = info?.step, name = info?.name;
+    switch (stage) {
+      case "queued":      return "Queued…";
+      case "starting":    return "Starting…";
+      case "enhancing":   return `Enhancing ${s}/${t}: ${name || ""}`;
+      case "uploading":   return `Uploading to fal.ai ${s}/${t}: ${name || ""}`;
+      case "generating":  return `Generating clip ${s}/${t} (image-to-video)…`;
+      case "downloading": return `Downloading clip ${s}/${t}…`;
+      case "skipped":     return `Skipped ${name} (content policy). Continuing…`;
+      case "combining":   return `Combining ${info?.clips || ""} clips with crossfades…`;
+      case "boomerang":   return "Building forward+reverse loop…";
+      case "done":        return "Done.";
+      case "error":       return `Error: ${info?.message || "unknown"}`;
+      default:            return stage;
+    }
+  }
+
+  async function readJsonOrFail(res, label) {
+    const ct = res.headers.get("content-type") || "";
+    if (!ct.includes("application/json")) {
+      const text = (await res.text()).slice(0, 200);
+      throw new Error(
+        `${label}: server returned ${res.status} ${res.statusText} (not JSON). ` +
+        `Is the Python backend (server.py) running and reachable? Snippet: ${text}`
+      );
+    }
+    return res.json();
+  }
+
+  async function pollJob(jobId) {
+    while (true) {
+      const r = await fetch(`${apiBase()}/api/status/${jobId}`);
+      if (!r.ok) throw new Error("Status request failed: " + r.status);
+      const job = await readJsonOrFail(r, "status");
+      uploadStatus.textContent = describeStage(job.stage, job.info);
+      if (job.state === "done") return job;
+      if (job.state === "error") throw new Error(job.info?.message || "Pipeline failed");
+      await new Promise(r => setTimeout(r, 1500));
+    }
+  }
+
+  const ACTIVE_JOB_KEY = "lensing.activeJob";
+
+  async function trackJob(jobId) {
+    localStorage.setItem(ACTIVE_JOB_KEY, jobId);
+    uploadBar.classList.add("busy");
+    uploadBtn.disabled = true;
+    uploadLink.style.display = "none";
+    try {
+      const job = await pollJob(jobId);
+      uploadStatus.textContent = `Done — generated video ready.`;
+      uploadLink.href = (apiBase() || "") + job.link;
+      uploadLink.style.display = "inline";
+      localStorage.removeItem(ACTIVE_JOB_KEY);
+      // Refresh the history panel so the new video appears.
+      if (typeof refreshHistory === "function") refreshHistory();
+    } catch (err) {
+      uploadStatus.textContent = "Error: " + err.message;
+      // If the server forgot the job (404 on status), clear it so we don't
+      // keep retrying on every refresh.
+      if (/unknown job_id|404/.test(err.message)) localStorage.removeItem(ACTIVE_JOB_KEY);
+    } finally {
+      uploadBar.classList.remove("busy");
+      uploadBtn.disabled = false;
+    }
+  }
+
+  uploadBtn.addEventListener("click", async () => {
+    if (!fileInput.files.length) return;
+    const n = fileInput.files.length;
+    const ok = confirm(
+      `This will run the full pipeline (PIL enhance → fal.ai image-to-video → ffmpeg concat) on ${n} image(s).\n\n` +
+      `It calls fal.ai once per image (real cost) and takes several minutes per image.\n\nProceed?`
+    );
+    if (!ok) return;
+
+    const fd = new FormData();
+    for (const f of fileInput.files) fd.append("images", f);
+    uploadBar.classList.add("busy");
+    uploadBtn.disabled = true;
+    uploadStatus.textContent = `Uploading ${n} image(s)…`;
+    uploadLink.style.display = "none";
+    try {
+      const res = await fetch(`${apiBase()}/api/upload`, { method: "POST", body: fd });
+      const data = await readJsonOrFail(res, "upload");
+      if (!res.ok) throw new Error(data.error || "Upload failed");
+      await trackJob(data.job_id);
+    } catch (err) {
+      uploadStatus.textContent = "Error: " + err.message;
+      uploadBar.classList.remove("busy");
+      uploadBtn.disabled = false;
+    }
+  });
+
+  // Resume tracking an in-progress job after a page refresh.
+  const persistedJob = localStorage.getItem(ACTIVE_JOB_KEY);
+  if (persistedJob) {
+    uploadStatus.textContent = `Resuming job ${persistedJob}…`;
+    trackJob(persistedJob).then(() => refreshHistory());
+  }
+
+  // -------- Generated-video history --------
+  const SELECTED_VIDEO_KEY = "lensing.selectedVideo";
+  const historyEl = document.getElementById("history");
+  const historyRefreshBtn = document.getElementById("history-refresh");
+
+  function fmtTimestamp(iso) {
+    if (!iso) return "—";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    } catch { return iso; }
+  }
+
+  function setMainVideo(url, jobId) {
+    if (!url) {
+      mainVideo.src = "final_video_pp.mp4";
+      localStorage.removeItem(SELECTED_VIDEO_KEY);
+    } else {
+      mainVideo.src = url;
+      localStorage.setItem(SELECTED_VIDEO_KEY, JSON.stringify({ url, jobId: jobId || null }));
+    }
+    mainVideo.load();
+    mainVideo.play().catch(() => {});
+    // Re-highlight the active history item.
+    document.querySelectorAll(".history-item").forEach(el => {
+      el.classList.toggle("active", el.dataset.jobId === (jobId || ""));
+    });
+  }
+
+  function renderHistory(jobs) {
+    // Keep the leading label but drop any prior items.
+    historyEl.querySelectorAll(".history-item, .clear-btn").forEach(el => el.remove());
+    const selectedRaw = localStorage.getItem(SELECTED_VIDEO_KEY);
+    let selectedJobId = "";
+    try {
+      selectedJobId = selectedRaw ? (JSON.parse(selectedRaw).jobId || "") : "";
+    } catch {}
+
+    const original = document.createElement("button");
+    original.className = "btn clear-btn";
+    original.style.cssText = `padding:6px 10px; font-size:12px; border-color:var(--accent); color:var(--accent); flex-shrink:0;`;
+    original.textContent = "▶ Play Original";
+    original.addEventListener("click", () => setMainVideo(null));
+    historyEl.appendChild(original);
+
+    if (!jobs || jobs.length === 0) {
+      historyEl.classList.remove("empty");
+      return;
+    }
+    historyEl.classList.remove("empty");
+    const base = apiBase() || "";
+
+    for (const j of jobs) {
+      const item = document.createElement("div");
+      item.className = "history-item";
+      item.dataset.jobId = j.id;
+      if (j.id === selectedJobId) item.classList.add("active");
+
+      const videoUrl = base + j.video;
+      const linkUrl = base + j.link;
+
+      item.innerHTML = `
+        <span class="ts">${fmtTimestamp(j.created_at)}</span>
+        <span class="meta">· ${j.count || 0} img · ${j.id.slice(0, 8)}</span>
+        <span class="actions">
+          <button class="btn" data-act="play">▶ Play here</button>
+          <a class="btn" href="${linkUrl}" target="_blank" rel="noopener">Open</a>
+          <a class="btn" href="${videoUrl}" download>↓</a>
+        </span>
+      `;
+      item.querySelector('[data-act="play"]').addEventListener("click", () => setMainVideo(videoUrl, j.id));
+      historyEl.appendChild(item);
+    }
+
+  }
+
+  async function refreshHistory() {
+    try {
+      const r = await fetch(`${apiBase()}/api/jobs`);
+      if (!r.ok) return;
+      const data = await r.json();
+      renderHistory(data.jobs || []);
+    } catch { /* offline / no backend — leave empty */ }
+  }
+
+  historyRefreshBtn.addEventListener("click", refreshHistory);
+
+  // Restore previously selected video on load.
+  try {
+    const sel = JSON.parse(localStorage.getItem(SELECTED_VIDEO_KEY) || "null");
+    if (sel?.url) setMainVideo(sel.url, sel.jobId);
+  } catch {}
+
+  refreshHistory();
+
+  // -------- Start overlay (gates autoplay-with-sound) --------
+  const startOverlay = document.getElementById("start");
+  const video = document.getElementById("main-video");
+
+  // Default YouTube URL (Eine kleine Nachtmusik) — overridable via the input.
+  const DEFAULT_YT_URL = "https://www.youtube.com/watch?v=FVTXlRxVdEY";
+  const savedUrl = localStorage.getItem(YT_KEY) || DEFAULT_YT_URL;
+  ytInput.value = savedUrl;
+
+  startOverlay.addEventListener("click", async () => {
+    startOverlay.classList.add("hidden");
+    try { await video.play(); } catch (_) {}
+    startSlideshow();
+    const id = extractVideoId(savedUrl);
+    if (id) startMusic(id);
+  });
+</script>
+
+</body>
+</html>

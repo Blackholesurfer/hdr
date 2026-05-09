@@ -1,0 +1,1868 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Enhanced Gallery</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { background:#111; color:#ddd; font-family:Arial; margin:0; }
+header { padding:14px 18px; border-bottom:1px solid #333; position:sticky; top:0; background:#111; z-index:10; }
+.controls { display:flex; flex-wrap:wrap; gap:12px 18px; align-items:end; margin-top:12px; }
+.control { display:flex; flex-direction:column; gap:6px; min-width:220px; }
+label { color:#aaa; font-size:12px; }
+input[type="range"] { width:220px; }
+.smallbtn { background:#1a1a1a; border:1px solid #444; color:#ddd; padding:8px 10px; border-radius:8px; cursor:pointer; }
+.smallbtn:hover { border-color:#666; }
+.note { color:#aaa; font-size:12px; margin-top:6px; }
+
+.card { margin:18px; padding-bottom:18px; border-bottom:1px solid #333; }
+.row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+img { width:100%; max-height:320px; object-fit:cover; border:1px solid #444; display:block; }
+.label { color:#aaa; font-size:13px; margin:6px 0; }
+.name { color:#9fd3ff; font-size:13px; margin-top:10px; }
+
+.perimg { display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+.perimg .pill { font-size:12px; color:#aaa; }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+    <div>
+      <div><strong>Gallery Controls</strong></div>
+      <div class="note">Sliders adjust preview only. Settings persist in this browser.</div>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button class="smallbtn" onclick="resetAll()">Reset all</button>
+      <button class="smallbtn" onclick="saveAll()">Save settings</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="control">
+      <label>Brightness: <span id="bVal"></span></label>
+      <input id="brightness" type="range" min="0.50" max="1.80" step="0.01" value="1.00">
+    </div>
+    <div class="control">
+      <label>Contrast: <span id="cVal"></span></label>
+      <input id="contrast" type="range" min="0.50" max="2.20" step="0.01" value="1.00">
+    </div>
+    <div class="control">
+      <label>Saturation: <span id="sVal"></span></label>
+      <input id="saturation" type="range" min="0.00" max="2.50" step="0.01" value="1.00">
+    </div>
+    <div class="control">
+      <label>“Crisp” (simulated): <span id="kVal"></span></label>
+      <input id="crisp" type="range" min="0.80" max="1.60" step="0.01" value="1.00">
+    </div>
+  </div>
+</header>
+
+
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/001_Jorge Tinajero - IMG_0083.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="001_Jorge Tinajero - IMG_0083.jpg" src="images_enhanced/001_Jorge Tinajero - IMG_0083.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('001_Jorge Tinajero - IMG_0083.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('001_Jorge Tinajero - IMG_0083.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">001_Jorge Tinajero - IMG_0083.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/002_Jorge Tinajero - IMG_0002.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="002_Jorge Tinajero - IMG_0002.jpg" src="images_enhanced/002_Jorge Tinajero - IMG_0002.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('002_Jorge Tinajero - IMG_0002.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('002_Jorge Tinajero - IMG_0002.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">002_Jorge Tinajero - IMG_0002.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/003_Jorge Tinajero - IMG_0005.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="003_Jorge Tinajero - IMG_0005.jpg" src="images_enhanced/003_Jorge Tinajero - IMG_0005.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('003_Jorge Tinajero - IMG_0005.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('003_Jorge Tinajero - IMG_0005.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">003_Jorge Tinajero - IMG_0005.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/004_Jorge Tinajero - IMG_0023.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="004_Jorge Tinajero - IMG_0023.jpg" src="images_enhanced/004_Jorge Tinajero - IMG_0023.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('004_Jorge Tinajero - IMG_0023.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('004_Jorge Tinajero - IMG_0023.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">004_Jorge Tinajero - IMG_0023.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/005_Jorge Tinajero - IMG_0035.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="005_Jorge Tinajero - IMG_0035.jpg" src="images_enhanced/005_Jorge Tinajero - IMG_0035.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('005_Jorge Tinajero - IMG_0035.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('005_Jorge Tinajero - IMG_0035.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">005_Jorge Tinajero - IMG_0035.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/006_Jorge Tinajero - IMG_0056.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="006_Jorge Tinajero - IMG_0056.jpg" src="images_enhanced/006_Jorge Tinajero - IMG_0056.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('006_Jorge Tinajero - IMG_0056.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('006_Jorge Tinajero - IMG_0056.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">006_Jorge Tinajero - IMG_0056.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/007_Jorge Tinajero - IMG_0068.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="007_Jorge Tinajero - IMG_0068.jpg" src="images_enhanced/007_Jorge Tinajero - IMG_0068.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('007_Jorge Tinajero - IMG_0068.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('007_Jorge Tinajero - IMG_0068.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">007_Jorge Tinajero - IMG_0068.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/008_Jorge Tinajero - IMG_0074.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="008_Jorge Tinajero - IMG_0074.jpg" src="images_enhanced/008_Jorge Tinajero - IMG_0074.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('008_Jorge Tinajero - IMG_0074.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('008_Jorge Tinajero - IMG_0074.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">008_Jorge Tinajero - IMG_0074.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/009_Jorge Tinajero - IMG_0077.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="009_Jorge Tinajero - IMG_0077.jpg" src="images_enhanced/009_Jorge Tinajero - IMG_0077.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('009_Jorge Tinajero - IMG_0077.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('009_Jorge Tinajero - IMG_0077.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">009_Jorge Tinajero - IMG_0077.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/010_Jorge Tinajero - IMG_0080.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="010_Jorge Tinajero - IMG_0080.jpg" src="images_enhanced/010_Jorge Tinajero - IMG_0080.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('010_Jorge Tinajero - IMG_0080.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('010_Jorge Tinajero - IMG_0080.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">010_Jorge Tinajero - IMG_0080.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/011_Jorge Tinajero - IMG_0086.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="011_Jorge Tinajero - IMG_0086.jpg" src="images_enhanced/011_Jorge Tinajero - IMG_0086.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('011_Jorge Tinajero - IMG_0086.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('011_Jorge Tinajero - IMG_0086.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">011_Jorge Tinajero - IMG_0086.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/012_Jorge Tinajero - IMG_0089.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="012_Jorge Tinajero - IMG_0089.jpg" src="images_enhanced/012_Jorge Tinajero - IMG_0089.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('012_Jorge Tinajero - IMG_0089.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('012_Jorge Tinajero - IMG_0089.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">012_Jorge Tinajero - IMG_0089.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/013_Jorge Tinajero - IMG_0095.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="013_Jorge Tinajero - IMG_0095.jpg" src="images_enhanced/013_Jorge Tinajero - IMG_0095.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('013_Jorge Tinajero - IMG_0095.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('013_Jorge Tinajero - IMG_0095.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">013_Jorge Tinajero - IMG_0095.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/014_Jorge Tinajero - IMG_0098.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="014_Jorge Tinajero - IMG_0098.jpg" src="images_enhanced/014_Jorge Tinajero - IMG_0098.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('014_Jorge Tinajero - IMG_0098.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('014_Jorge Tinajero - IMG_0098.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">014_Jorge Tinajero - IMG_0098.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/015_Jorge Tinajero - IMG_0101.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="015_Jorge Tinajero - IMG_0101.jpg" src="images_enhanced/015_Jorge Tinajero - IMG_0101.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('015_Jorge Tinajero - IMG_0101.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('015_Jorge Tinajero - IMG_0101.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">015_Jorge Tinajero - IMG_0101.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/016_Jorge Tinajero - IMG_0104.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="016_Jorge Tinajero - IMG_0104.jpg" src="images_enhanced/016_Jorge Tinajero - IMG_0104.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('016_Jorge Tinajero - IMG_0104.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('016_Jorge Tinajero - IMG_0104.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">016_Jorge Tinajero - IMG_0104.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/017_Jorge Tinajero - IMG_0113.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="017_Jorge Tinajero - IMG_0113.jpg" src="images_enhanced/017_Jorge Tinajero - IMG_0113.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('017_Jorge Tinajero - IMG_0113.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('017_Jorge Tinajero - IMG_0113.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">017_Jorge Tinajero - IMG_0113.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/018_Jorge Tinajero - IMG_0116.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="018_Jorge Tinajero - IMG_0116.jpg" src="images_enhanced/018_Jorge Tinajero - IMG_0116.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('018_Jorge Tinajero - IMG_0116.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('018_Jorge Tinajero - IMG_0116.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">018_Jorge Tinajero - IMG_0116.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/019_Jorge Tinajero - IMG_0119.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="019_Jorge Tinajero - IMG_0119.jpg" src="images_enhanced/019_Jorge Tinajero - IMG_0119.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('019_Jorge Tinajero - IMG_0119.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('019_Jorge Tinajero - IMG_0119.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">019_Jorge Tinajero - IMG_0119.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/020_Jorge Tinajero - IMG_0122.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="020_Jorge Tinajero - IMG_0122.jpg" src="images_enhanced/020_Jorge Tinajero - IMG_0122.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('020_Jorge Tinajero - IMG_0122.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('020_Jorge Tinajero - IMG_0122.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">020_Jorge Tinajero - IMG_0122.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/021_Jorge Tinajero - IMG_0176.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="021_Jorge Tinajero - IMG_0176.jpg" src="images_enhanced/021_Jorge Tinajero - IMG_0176.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('021_Jorge Tinajero - IMG_0176.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('021_Jorge Tinajero - IMG_0176.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">021_Jorge Tinajero - IMG_0176.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/022_Jorge Tinajero - IMG_0128.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="022_Jorge Tinajero - IMG_0128.jpg" src="images_enhanced/022_Jorge Tinajero - IMG_0128.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('022_Jorge Tinajero - IMG_0128.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('022_Jorge Tinajero - IMG_0128.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">022_Jorge Tinajero - IMG_0128.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/023_Jorge Tinajero - IMG_0131.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="023_Jorge Tinajero - IMG_0131.jpg" src="images_enhanced/023_Jorge Tinajero - IMG_0131.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('023_Jorge Tinajero - IMG_0131.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('023_Jorge Tinajero - IMG_0131.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">023_Jorge Tinajero - IMG_0131.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/024_Jorge Tinajero - IMG_0134.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="024_Jorge Tinajero - IMG_0134.jpg" src="images_enhanced/024_Jorge Tinajero - IMG_0134.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('024_Jorge Tinajero - IMG_0134.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('024_Jorge Tinajero - IMG_0134.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">024_Jorge Tinajero - IMG_0134.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/025_Jorge Tinajero - IMG_0137.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="025_Jorge Tinajero - IMG_0137.jpg" src="images_enhanced/025_Jorge Tinajero - IMG_0137.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('025_Jorge Tinajero - IMG_0137.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('025_Jorge Tinajero - IMG_0137.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">025_Jorge Tinajero - IMG_0137.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/026_Jorge Tinajero - IMG_0140.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="026_Jorge Tinajero - IMG_0140.jpg" src="images_enhanced/026_Jorge Tinajero - IMG_0140.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('026_Jorge Tinajero - IMG_0140.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('026_Jorge Tinajero - IMG_0140.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">026_Jorge Tinajero - IMG_0140.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/027_Jorge Tinajero - IMG_0143.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="027_Jorge Tinajero - IMG_0143.jpg" src="images_enhanced/027_Jorge Tinajero - IMG_0143.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('027_Jorge Tinajero - IMG_0143.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('027_Jorge Tinajero - IMG_0143.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">027_Jorge Tinajero - IMG_0143.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/028_Jorge Tinajero - IMG_0146.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="028_Jorge Tinajero - IMG_0146.jpg" src="images_enhanced/028_Jorge Tinajero - IMG_0146.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('028_Jorge Tinajero - IMG_0146.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('028_Jorge Tinajero - IMG_0146.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">028_Jorge Tinajero - IMG_0146.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/029_Jorge Tinajero - IMG_0149.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="029_Jorge Tinajero - IMG_0149.jpg" src="images_enhanced/029_Jorge Tinajero - IMG_0149.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('029_Jorge Tinajero - IMG_0149.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('029_Jorge Tinajero - IMG_0149.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">029_Jorge Tinajero - IMG_0149.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/030_Jorge Tinajero - IMG_0227.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="030_Jorge Tinajero - IMG_0227.jpg" src="images_enhanced/030_Jorge Tinajero - IMG_0227.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('030_Jorge Tinajero - IMG_0227.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('030_Jorge Tinajero - IMG_0227.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">030_Jorge Tinajero - IMG_0227.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/031_Jorge Tinajero - IMG_0230.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="031_Jorge Tinajero - IMG_0230.jpg" src="images_enhanced/031_Jorge Tinajero - IMG_0230.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('031_Jorge Tinajero - IMG_0230.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('031_Jorge Tinajero - IMG_0230.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">031_Jorge Tinajero - IMG_0230.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/032_Jorge Tinajero - IMG_0152.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="032_Jorge Tinajero - IMG_0152.jpg" src="images_enhanced/032_Jorge Tinajero - IMG_0152.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('032_Jorge Tinajero - IMG_0152.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('032_Jorge Tinajero - IMG_0152.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">032_Jorge Tinajero - IMG_0152.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/033_Jorge Tinajero - IMG_0155.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="033_Jorge Tinajero - IMG_0155.jpg" src="images_enhanced/033_Jorge Tinajero - IMG_0155.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('033_Jorge Tinajero - IMG_0155.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('033_Jorge Tinajero - IMG_0155.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">033_Jorge Tinajero - IMG_0155.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/034_Jorge Tinajero - IMG_0224.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="034_Jorge Tinajero - IMG_0224.jpg" src="images_enhanced/034_Jorge Tinajero - IMG_0224.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('034_Jorge Tinajero - IMG_0224.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('034_Jorge Tinajero - IMG_0224.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">034_Jorge Tinajero - IMG_0224.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/035_Jorge Tinajero - IMG_0107.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="035_Jorge Tinajero - IMG_0107.jpg" src="images_enhanced/035_Jorge Tinajero - IMG_0107.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('035_Jorge Tinajero - IMG_0107.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('035_Jorge Tinajero - IMG_0107.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">035_Jorge Tinajero - IMG_0107.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/036_Jorge Tinajero - IMG_0110.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="036_Jorge Tinajero - IMG_0110.jpg" src="images_enhanced/036_Jorge Tinajero - IMG_0110.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('036_Jorge Tinajero - IMG_0110.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('036_Jorge Tinajero - IMG_0110.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">036_Jorge Tinajero - IMG_0110.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/037_Jorge Tinajero - IMG_0218.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="037_Jorge Tinajero - IMG_0218.jpg" src="images_enhanced/037_Jorge Tinajero - IMG_0218.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('037_Jorge Tinajero - IMG_0218.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('037_Jorge Tinajero - IMG_0218.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">037_Jorge Tinajero - IMG_0218.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/038_Jorge Tinajero - IMG_0221.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="038_Jorge Tinajero - IMG_0221.jpg" src="images_enhanced/038_Jorge Tinajero - IMG_0221.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('038_Jorge Tinajero - IMG_0221.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('038_Jorge Tinajero - IMG_0221.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">038_Jorge Tinajero - IMG_0221.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/039_Jorge Tinajero - IMG_0158.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="039_Jorge Tinajero - IMG_0158.jpg" src="images_enhanced/039_Jorge Tinajero - IMG_0158.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('039_Jorge Tinajero - IMG_0158.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('039_Jorge Tinajero - IMG_0158.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">039_Jorge Tinajero - IMG_0158.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/040_Jorge Tinajero - IMG_0161.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="040_Jorge Tinajero - IMG_0161.jpg" src="images_enhanced/040_Jorge Tinajero - IMG_0161.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('040_Jorge Tinajero - IMG_0161.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('040_Jorge Tinajero - IMG_0161.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">040_Jorge Tinajero - IMG_0161.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/041_Jorge Tinajero - IMG_0164.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="041_Jorge Tinajero - IMG_0164.jpg" src="images_enhanced/041_Jorge Tinajero - IMG_0164.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('041_Jorge Tinajero - IMG_0164.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('041_Jorge Tinajero - IMG_0164.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">041_Jorge Tinajero - IMG_0164.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/042_Jorge Tinajero - IMG_0167.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="042_Jorge Tinajero - IMG_0167.jpg" src="images_enhanced/042_Jorge Tinajero - IMG_0167.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('042_Jorge Tinajero - IMG_0167.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('042_Jorge Tinajero - IMG_0167.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">042_Jorge Tinajero - IMG_0167.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/043_Jorge Tinajero - IMG_0170.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="043_Jorge Tinajero - IMG_0170.jpg" src="images_enhanced/043_Jorge Tinajero - IMG_0170.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('043_Jorge Tinajero - IMG_0170.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('043_Jorge Tinajero - IMG_0170.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">043_Jorge Tinajero - IMG_0170.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/044_Jorge Tinajero - IMG_0173.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="044_Jorge Tinajero - IMG_0173.jpg" src="images_enhanced/044_Jorge Tinajero - IMG_0173.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('044_Jorge Tinajero - IMG_0173.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('044_Jorge Tinajero - IMG_0173.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">044_Jorge Tinajero - IMG_0173.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/045_Jorge Tinajero - IMG_0197.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="045_Jorge Tinajero - IMG_0197.jpg" src="images_enhanced/045_Jorge Tinajero - IMG_0197.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('045_Jorge Tinajero - IMG_0197.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('045_Jorge Tinajero - IMG_0197.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">045_Jorge Tinajero - IMG_0197.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/046_Jorge Tinajero - IMG_0200.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="046_Jorge Tinajero - IMG_0200.jpg" src="images_enhanced/046_Jorge Tinajero - IMG_0200.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('046_Jorge Tinajero - IMG_0200.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('046_Jorge Tinajero - IMG_0200.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">046_Jorge Tinajero - IMG_0200.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/047_Jorge Tinajero - IMG_0203.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="047_Jorge Tinajero - IMG_0203.jpg" src="images_enhanced/047_Jorge Tinajero - IMG_0203.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('047_Jorge Tinajero - IMG_0203.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('047_Jorge Tinajero - IMG_0203.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">047_Jorge Tinajero - IMG_0203.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/048_Jorge Tinajero - IMG_0206.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="048_Jorge Tinajero - IMG_0206.jpg" src="images_enhanced/048_Jorge Tinajero - IMG_0206.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('048_Jorge Tinajero - IMG_0206.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('048_Jorge Tinajero - IMG_0206.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">048_Jorge Tinajero - IMG_0206.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/049_Jorge Tinajero - IMG_0209.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="049_Jorge Tinajero - IMG_0209.jpg" src="images_enhanced/049_Jorge Tinajero - IMG_0209.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('049_Jorge Tinajero - IMG_0209.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('049_Jorge Tinajero - IMG_0209.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">049_Jorge Tinajero - IMG_0209.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/050_Jorge Tinajero - IMG_0191.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="050_Jorge Tinajero - IMG_0191.jpg" src="images_enhanced/050_Jorge Tinajero - IMG_0191.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('050_Jorge Tinajero - IMG_0191.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('050_Jorge Tinajero - IMG_0191.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">050_Jorge Tinajero - IMG_0191.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/051_Jorge Tinajero - IMG_0125.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="051_Jorge Tinajero - IMG_0125.jpg" src="images_enhanced/051_Jorge Tinajero - IMG_0125.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('051_Jorge Tinajero - IMG_0125.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('051_Jorge Tinajero - IMG_0125.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">051_Jorge Tinajero - IMG_0125.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/052_Jorge Tinajero - IMG_0182.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="052_Jorge Tinajero - IMG_0182.jpg" src="images_enhanced/052_Jorge Tinajero - IMG_0182.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('052_Jorge Tinajero - IMG_0182.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('052_Jorge Tinajero - IMG_0182.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">052_Jorge Tinajero - IMG_0182.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/053_Jorge Tinajero - IMG_0185.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="053_Jorge Tinajero - IMG_0185.jpg" src="images_enhanced/053_Jorge Tinajero - IMG_0185.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('053_Jorge Tinajero - IMG_0185.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('053_Jorge Tinajero - IMG_0185.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">053_Jorge Tinajero - IMG_0185.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/054_Jorge Tinajero - IMG_0188.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="054_Jorge Tinajero - IMG_0188.jpg" src="images_enhanced/054_Jorge Tinajero - IMG_0188.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('054_Jorge Tinajero - IMG_0188.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('054_Jorge Tinajero - IMG_0188.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">054_Jorge Tinajero - IMG_0188.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/055_Jorge Tinajero - IMG_0212.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="055_Jorge Tinajero - IMG_0212.jpg" src="images_enhanced/055_Jorge Tinajero - IMG_0212.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('055_Jorge Tinajero - IMG_0212.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('055_Jorge Tinajero - IMG_0212.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">055_Jorge Tinajero - IMG_0212.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/056_Jorge Tinajero - IMG_0233.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="056_Jorge Tinajero - IMG_0233.jpg" src="images_enhanced/056_Jorge Tinajero - IMG_0233.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('056_Jorge Tinajero - IMG_0233.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('056_Jorge Tinajero - IMG_0233.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">056_Jorge Tinajero - IMG_0233.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/057_Jorge Tinajero - IMG_0236.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="057_Jorge Tinajero - IMG_0236.jpg" src="images_enhanced/057_Jorge Tinajero - IMG_0236.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('057_Jorge Tinajero - IMG_0236.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('057_Jorge Tinajero - IMG_0236.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">057_Jorge Tinajero - IMG_0236.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/058_Jorge Tinajero - IMG_0017.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="058_Jorge Tinajero - IMG_0017.jpg" src="images_enhanced/058_Jorge Tinajero - IMG_0017.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('058_Jorge Tinajero - IMG_0017.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('058_Jorge Tinajero - IMG_0017.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">058_Jorge Tinajero - IMG_0017.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/059_Jorge Tinajero - IMG_0239.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="059_Jorge Tinajero - IMG_0239.jpg" src="images_enhanced/059_Jorge Tinajero - IMG_0239.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('059_Jorge Tinajero - IMG_0239.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('059_Jorge Tinajero - IMG_0239.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">059_Jorge Tinajero - IMG_0239.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/060_Jorge Tinajero - IMG_0011.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="060_Jorge Tinajero - IMG_0011.jpg" src="images_enhanced/060_Jorge Tinajero - IMG_0011.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('060_Jorge Tinajero - IMG_0011.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('060_Jorge Tinajero - IMG_0011.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">060_Jorge Tinajero - IMG_0011.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/061_Jorge Tinajero - IMG_0020.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="061_Jorge Tinajero - IMG_0020.jpg" src="images_enhanced/061_Jorge Tinajero - IMG_0020.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('061_Jorge Tinajero - IMG_0020.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('061_Jorge Tinajero - IMG_0020.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">061_Jorge Tinajero - IMG_0020.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/062_Jorge Tinajero - IMG_0029.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="062_Jorge Tinajero - IMG_0029.jpg" src="images_enhanced/062_Jorge Tinajero - IMG_0029.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('062_Jorge Tinajero - IMG_0029.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('062_Jorge Tinajero - IMG_0029.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">062_Jorge Tinajero - IMG_0029.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/063_Jorge Tinajero - IMG_0032.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="063_Jorge Tinajero - IMG_0032.jpg" src="images_enhanced/063_Jorge Tinajero - IMG_0032.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('063_Jorge Tinajero - IMG_0032.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('063_Jorge Tinajero - IMG_0032.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">063_Jorge Tinajero - IMG_0032.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/064_Jorge Tinajero - IMG_0038.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="064_Jorge Tinajero - IMG_0038.jpg" src="images_enhanced/064_Jorge Tinajero - IMG_0038.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('064_Jorge Tinajero - IMG_0038.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('064_Jorge Tinajero - IMG_0038.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">064_Jorge Tinajero - IMG_0038.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/065_Jorge Tinajero - IMG_0041.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="065_Jorge Tinajero - IMG_0041.jpg" src="images_enhanced/065_Jorge Tinajero - IMG_0041.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('065_Jorge Tinajero - IMG_0041.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('065_Jorge Tinajero - IMG_0041.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">065_Jorge Tinajero - IMG_0041.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/066_Jorge Tinajero - IMG_0044.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="066_Jorge Tinajero - IMG_0044.jpg" src="images_enhanced/066_Jorge Tinajero - IMG_0044.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('066_Jorge Tinajero - IMG_0044.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('066_Jorge Tinajero - IMG_0044.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">066_Jorge Tinajero - IMG_0044.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/067_Jorge Tinajero - IMG_0047.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="067_Jorge Tinajero - IMG_0047.jpg" src="images_enhanced/067_Jorge Tinajero - IMG_0047.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('067_Jorge Tinajero - IMG_0047.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('067_Jorge Tinajero - IMG_0047.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">067_Jorge Tinajero - IMG_0047.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/068_Jorge Tinajero - IMG_0053.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="068_Jorge Tinajero - IMG_0053.jpg" src="images_enhanced/068_Jorge Tinajero - IMG_0053.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('068_Jorge Tinajero - IMG_0053.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('068_Jorge Tinajero - IMG_0053.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">068_Jorge Tinajero - IMG_0053.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/069_Jorge Tinajero - IMG_0059.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="069_Jorge Tinajero - IMG_0059.jpg" src="images_enhanced/069_Jorge Tinajero - IMG_0059.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('069_Jorge Tinajero - IMG_0059.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('069_Jorge Tinajero - IMG_0059.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">069_Jorge Tinajero - IMG_0059.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/070_Jorge Tinajero - IMG_0062.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="070_Jorge Tinajero - IMG_0062.jpg" src="images_enhanced/070_Jorge Tinajero - IMG_0062.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('070_Jorge Tinajero - IMG_0062.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('070_Jorge Tinajero - IMG_0062.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">070_Jorge Tinajero - IMG_0062.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/071_Jorge Tinajero - IMG_0065.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="071_Jorge Tinajero - IMG_0065.jpg" src="images_enhanced/071_Jorge Tinajero - IMG_0065.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('071_Jorge Tinajero - IMG_0065.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('071_Jorge Tinajero - IMG_0065.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">071_Jorge Tinajero - IMG_0065.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/072_Jorge Tinajero - IMG_0071.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="072_Jorge Tinajero - IMG_0071.jpg" src="images_enhanced/072_Jorge Tinajero - IMG_0071.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('072_Jorge Tinajero - IMG_0071.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('072_Jorge Tinajero - IMG_0071.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">072_Jorge Tinajero - IMG_0071.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/073_Jorge Tinajero - IMG_0092.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="073_Jorge Tinajero - IMG_0092.jpg" src="images_enhanced/073_Jorge Tinajero - IMG_0092.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('073_Jorge Tinajero - IMG_0092.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('073_Jorge Tinajero - IMG_0092.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">073_Jorge Tinajero - IMG_0092.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/074_Jorge Tinajero - IMG_0179.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="074_Jorge Tinajero - IMG_0179.jpg" src="images_enhanced/074_Jorge Tinajero - IMG_0179.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('074_Jorge Tinajero - IMG_0179.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('074_Jorge Tinajero - IMG_0179.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">074_Jorge Tinajero - IMG_0179.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/075_Jorge Tinajero - IMG_0194.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="075_Jorge Tinajero - IMG_0194.jpg" src="images_enhanced/075_Jorge Tinajero - IMG_0194.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('075_Jorge Tinajero - IMG_0194.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('075_Jorge Tinajero - IMG_0194.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">075_Jorge Tinajero - IMG_0194.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/076_Jorge Tinajero - IMG_0215.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="076_Jorge Tinajero - IMG_0215.jpg" src="images_enhanced/076_Jorge Tinajero - IMG_0215.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('076_Jorge Tinajero - IMG_0215.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('076_Jorge Tinajero - IMG_0215.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">076_Jorge Tinajero - IMG_0215.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/077_Jorge Tinajero - IMG_0008.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="077_Jorge Tinajero - IMG_0008.jpg" src="images_enhanced/077_Jorge Tinajero - IMG_0008.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('077_Jorge Tinajero - IMG_0008.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('077_Jorge Tinajero - IMG_0008.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">077_Jorge Tinajero - IMG_0008.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/078_Jorge Tinajero - IMG_0014.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="078_Jorge Tinajero - IMG_0014.jpg" src="images_enhanced/078_Jorge Tinajero - IMG_0014.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('078_Jorge Tinajero - IMG_0014.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('078_Jorge Tinajero - IMG_0014.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">078_Jorge Tinajero - IMG_0014.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/079_Jorge Tinajero - IMG_0026.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="079_Jorge Tinajero - IMG_0026.jpg" src="images_enhanced/079_Jorge Tinajero - IMG_0026.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('079_Jorge Tinajero - IMG_0026.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('079_Jorge Tinajero - IMG_0026.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">079_Jorge Tinajero - IMG_0026.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/080_Jorge Tinajero - IMG_0050.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="080_Jorge Tinajero - IMG_0050.jpg" src="images_enhanced/080_Jorge Tinajero - IMG_0050.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('080_Jorge Tinajero - IMG_0050.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('080_Jorge Tinajero - IMG_0050.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">080_Jorge Tinajero - IMG_0050.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/IMG_4322.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="IMG_4322.jpg" src="images_enhanced/IMG_4322.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('IMG_4322.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('IMG_4322.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">IMG_4322.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/IMG_4572.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="IMG_4572.jpg" src="images_enhanced/IMG_4572.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('IMG_4572.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('IMG_4572.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">IMG_4572.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/IMG_4574.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="IMG_4574.jpg" src="images_enhanced/IMG_4574.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('IMG_4574.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('IMG_4574.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">IMG_4574.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/IMG_4579.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="IMG_4579.jpg" src="images_enhanced/IMG_4579.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('IMG_4579.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('IMG_4579.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">IMG_4579.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/IMG_4582.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="IMG_4582.jpg" src="images_enhanced/IMG_4582.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('IMG_4582.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('IMG_4582.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">IMG_4582.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/IMG_4583.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="IMG_4583.jpg" src="images_enhanced/IMG_4583.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('IMG_4583.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('IMG_4583.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">IMG_4583.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/IMG_4815.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="IMG_4815.jpg" src="images_enhanced/IMG_4815.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('IMG_4815.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('IMG_4815.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">IMG_4815.jpg</div>
+        </div>
+        
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="label">Original</div>
+              <img src="images/IMG_4816.jpg" loading="lazy">
+            </div>
+            <div>
+              <div class="label">Enhanced (preview adjustable)</div>
+              <img class="enhanced" data-image-id="IMG_4816.jpg" src="images_enhanced/IMG_4816.jpg" loading="lazy">
+              <div class="perimg">
+                <span class="pill">Per-image:</span>
+                <button class="smallbtn" onclick="useGlobalFor('IMG_4816.jpg')">Use global</button>
+                <button class="smallbtn" onclick="resetImage('IMG_4816.jpg')">Reset image</button>
+              </div>
+            </div>
+          </div>
+          <div class="name">IMG_4816.jpg</div>
+        </div>
+        
+
+<script>
+const defaults = { brightness: 1.00, contrast: 1.00, saturation: 1.00, crisp: 1.00 };
+
+const sliders = {
+  brightness: document.getElementById("brightness"),
+  contrast: document.getElementById("contrast"),
+  saturation: document.getElementById("saturation"),
+  crisp: document.getElementById("crisp"),
+};
+
+const labels = {
+  bVal: document.getElementById("bVal"),
+  cVal: document.getElementById("cVal"),
+  sVal: document.getElementById("sVal"),
+  kVal: document.getElementById("kVal"),
+};
+
+function fmt(x) { return Number(x).toFixed(2); }
+
+function getGlobal() {
+  return {
+    brightness: Number(sliders.brightness.value),
+    contrast: Number(sliders.contrast.value),
+    saturation: Number(sliders.saturation.value),
+    crisp: Number(sliders.crisp.value),
+  };
+}
+
+function setGlobal(v) {
+  sliders.brightness.value = v.brightness;
+  sliders.contrast.value = v.contrast;
+  sliders.saturation.value = v.saturation;
+  sliders.crisp.value = v.crisp;
+  updateGlobalLabels();
+}
+
+function updateGlobalLabels() {
+  const g = getGlobal();
+  labels.bVal.textContent = fmt(g.brightness);
+  labels.cVal.textContent = fmt(g.contrast);
+  labels.sVal.textContent = fmt(g.saturation);
+  labels.kVal.textContent = fmt(g.crisp);
+}
+
+function cssFilterFrom(v) {
+  // Crisp simulated with drop-shadow (subtle) + extra contrast
+  const extraContrast = v.crisp;
+  const shadow = (v.crisp > 1.0) ? ` drop-shadow(0 0 ${((v.crisp-1.0)*1.2).toFixed(2)}px rgba(255,255,255,0.15))` : "";
+  return `brightness(${v.brightness}) contrast(${(v.contrast * extraContrast).toFixed(3)}) saturate(${v.saturation})${shadow}`;
+}
+
+function loadGlobal() {
+  try {
+    const raw = localStorage.getItem("globalFilters");
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function loadPerImage(id) {
+  try {
+    const raw = localStorage.getItem("perImageFilters");
+    if (!raw) return null;
+    const all = JSON.parse(raw);
+    return all[id] ?? null;
+  } catch(e) { return null; }
+}
+
+function savePerImage(id, val) {
+  let all = {};
+  try {
+    const raw = localStorage.getItem("perImageFilters");
+    all = raw ? JSON.parse(raw) : {};
+  } catch(e) { all = {}; }
+  all[id] = val;
+  localStorage.setItem("perImageFilters", JSON.stringify(all));
+}
+
+function resetImage(id) {
+  let all = {};
+  try {
+    const raw = localStorage.getItem("perImageFilters");
+    all = raw ? JSON.parse(raw) : {};
+  } catch(e) { all = {}; }
+  delete all[id];
+  localStorage.setItem("perImageFilters", JSON.stringify(all));
+  applyAll();
+}
+
+function useGlobalFor(id) {
+  savePerImage(id, getGlobal());
+  applyAll();
+}
+
+function applyAll() {
+  const g = getGlobal();
+  document.querySelectorAll("img.enhanced").forEach(img => {
+    const id = img.getAttribute("data-image-id");
+    const per = loadPerImage(id);
+    const v = per ?? g;
+    img.style.filter = cssFilterFrom(v);
+  });
+}
+
+function saveAll() {
+  localStorage.setItem("globalFilters", JSON.stringify(getGlobal()));
+  alert("Saved.");
+}
+
+function resetAll() {
+  localStorage.removeItem("globalFilters");
+  localStorage.removeItem("perImageFilters");
+  setGlobal(defaults);
+  applyAll();
+}
+
+window.resetAll = resetAll;
+window.saveAll = saveAll;
+window.useGlobalFor = useGlobalFor;
+window.resetImage = resetImage;
+
+Object.values(sliders).forEach(s => {
+  s.addEventListener("input", () => {
+    updateGlobalLabels();
+    applyAll();
+  });
+});
+
+setGlobal(loadGlobal() ?? defaults);
+applyAll();
+</script>
+
+</body>
+</html>
