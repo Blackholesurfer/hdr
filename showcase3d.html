@@ -78,25 +78,35 @@
         const PWC_URL = 'https://cdn.jsdelivr.net/npm/@playcanvas/web-components@0.3.0/dist/pwc.mjs';
 
         const params = new URLSearchParams(location.search);
-        const splatUrl = params.get('splat') || '/uploads/sample/scene.ply';
-        const isAbsolute = /^https?:\/\//i.test(splatUrl);
+        const DEFAULT_CANDIDATES = ['/uploads/sample/scene.ply', '/uploads/sample/scene.sog'];
+        const queryUrl = params.get('splat');
+        let splatUrl = queryUrl;
+        const isAbsolute = (u) => /^https?:\/\//i.test(u);
 
-        const showMissing = () => {
+        const showMissing = (expected) => {
             document.getElementById('loader').innerHTML = `
                 <div class="missing-card">
                     <h2>No splat found</h2>
-                    <p>Expected file at <code>${splatUrl}</code></p>
+                    <p>Expected file at <code>${expected}</code></p>
                     <p>Pass a URL directly: <code>?splat=https://example.com/scene.ply</code></p>
                     <p>Try the demo: <a href="?splat=https://cdn.jsdelivr.net/gh/playcanvas/web-components@main/examples/assets/splats/biker.sog">biker.sog</a></p>
                     <p>To make your own: scan a property in the free <strong>Polycam</strong> app, choose <em>Splat</em> mode, export <code>.ply</code>, drop it at <code>/uploads/sample/scene.ply</code>.</p>
                 </div>`;
         };
 
-        // For same-origin URLs only, probe to give a helpful error before loading pwc.mjs.
-        // Cross-origin HEAD requests fail under CORS even when valid, so trust absolute URLs.
-        if (!isAbsolute) {
-            const probe = await fetch(splatUrl, { method: 'HEAD' }).catch(() => null);
-            if (!probe || !probe.ok) { showMissing(); throw new Error('splat not found'); }
+        if (queryUrl) {
+            // Same-origin probe gives a helpful error before pwc.mjs loads. CORS HEAD on absolute
+            // URLs fails even when valid, so we trust those.
+            if (!isAbsolute(queryUrl)) {
+                const probe = await fetch(queryUrl, { method: 'HEAD' }).catch(() => null);
+                if (!probe || !probe.ok) { showMissing(queryUrl); throw new Error('splat not found'); }
+            }
+        } else {
+            for (const c of DEFAULT_CANDIDATES) {
+                const probe = await fetch(c, { method: 'HEAD' }).catch(() => null);
+                if (probe && probe.ok) { splatUrl = c; break; }
+            }
+            if (!splatUrl) { showMissing(DEFAULT_CANDIDATES.join(' or ')); throw new Error('splat not found'); }
         }
 
         // Set asset src BEFORE registering custom elements, so the upgrade picks it up.

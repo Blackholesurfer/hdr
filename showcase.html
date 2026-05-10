@@ -87,6 +87,16 @@
     letter-spacing: 0.06em;
   }
   header h1 span { color: var(--accent); }
+  .version {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-left: 10px;
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    vertical-align: middle;
+  }
 
   .controls {
     display: flex;
@@ -106,6 +116,15 @@
   .controls input[type="range"] {
     accent-color: var(--accent);
     width: 110px;
+  }
+  .controls select {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    max-width: 220px;
   }
   .controls .vol {
     display: flex;
@@ -388,17 +407,19 @@
   <header>
     <div class="brand">
       <img src="bhs_logo.jpg" alt="BHS">
-      <h1>IMAGE TO VIDEO <span>·</span> GENERATION</h1>
+      <h1>IMAGE TO VIDEO <span>·</span> GENERATION<span class="version">v3.1</span></h1>
     </div>
     <div class="controls">
-      <input id="yt-url" type="text" placeholder="Paste YouTube URL (Eine kleine Nachtmusik)">
+      <input id="yt-url" type="text" placeholder="Paste YouTube URL (Eine kleine Nachtmusik)" autocomplete="off">
       <button class="btn" id="yt-set">Set music</button>
+      <select id="yt-history" title="Previously played"></select>
       <span class="vol">
         Vol
         <input id="vol-slider" type="range" min="0" max="100" step="1" value="60">
         <span id="vol-val">60</span>
       </span>
       <button class="btn" id="mute-toggle">Mute</button>
+      <a class="btn" href="showcase3d.html" style="text-decoration:none">3D</a>
       <a class="btn" href="admin.html" style="text-decoration:none">Admin</a>
     </div>
   </header>
@@ -566,14 +587,40 @@
   // We use the iframe API so we can mute/unmute and ensure autoplay survives
   // browser policies after the user clicks the start overlay.
   const YT_KEY = "lensing.ytUrl";
+  const YT_HIST_KEY = "lensing.ytHistory";
+  const YT_HIST_LIMIT = 10;
   const ytInput = document.getElementById("yt-url");
   const ytSet = document.getElementById("yt-set");
+  const ytHistList = document.getElementById("yt-history");
   const muteBtn = document.getElementById("mute-toggle");
   const ytHost = document.getElementById("yt-host");
 
   let ytPlayer = null;
   let ytMuted = false;
   let ytVolume = Number(localStorage.getItem("lensing.ytVolume") ?? 60);
+  let lastQueuedUrl = "";
+  let lastSavedVideoId = "";
+
+  function loadYtHistory() {
+    try { return JSON.parse(localStorage.getItem(YT_HIST_KEY) || "[]"); } catch { return []; }
+  }
+  function escAttr(s) { return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;"); }
+  function escText(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+  function renderYtHistory(hist) {
+    const opts = hist.map(e => {
+      const label = [e.channelTitle, e.title].filter(Boolean).join(" — ") || e.url;
+      return `<option value="${escAttr(e.videoId)}" data-url="${escAttr(e.url || "")}">${escText(label)}</option>`;
+    }).join("");
+    ytHistList.innerHTML = `<option value="" disabled selected>Past channels…</option>${opts}`;
+  }
+  function recordYtHistory(entry) {
+    if (!entry || !entry.videoId) return;
+    let hist = loadYtHistory().filter(e => e.videoId !== entry.videoId);
+    hist.unshift(entry);
+    hist = hist.slice(0, YT_HIST_LIMIT);
+    localStorage.setItem(YT_HIST_KEY, JSON.stringify(hist));
+    renderYtHistory(hist);
+  }
 
   function extractVideoId(input) {
     if (!input) return null;
@@ -615,20 +662,52 @@
       playerVars: { autoplay: 1, controls: 0, loop: 1, playlist: videoId, modestbranding: 1, rel: 0 },
       events: {
         onReady: e => { e.target.setVolume(ytVolume); e.target.playVideo(); },
-        onStateChange: e => { if (e.data === YT.PlayerState.ENDED) e.target.playVideo(); }
+        onStateChange: e => {
+          if (e.data === YT.PlayerState.ENDED) e.target.playVideo();
+          if (e.data === YT.PlayerState.PLAYING) {
+            const data = e.target.getVideoData?.();
+            const vid = data?.video_id;
+            if (vid && vid !== lastSavedVideoId) {
+              lastSavedVideoId = vid;
+              recordYtHistory({
+                url: lastQueuedUrl || `https://www.youtube.com/watch?v=${vid}`,
+                videoId: vid,
+                title: data.title || "",
+                channelTitle: data.author || "",
+                ts: Date.now(),
+              });
+            }
+          }
+        }
       }
     });
   }
 
-  ytSet.addEventListener("click", () => {
-    const id = extractVideoId(ytInput.value);
-    if (!id) { alert("Could not parse a YouTube video ID from that URL."); return; }
-    localStorage.setItem(YT_KEY, ytInput.value.trim());
+  function queueVideo(rawUrl, videoId) {
+    localStorage.setItem(YT_KEY, rawUrl);
+    lastQueuedUrl = rawUrl;
     if (ytPlayer && ytPlayer.loadVideoById) {
-      ytPlayer.loadVideoById({ videoId: id });
+      ytPlayer.loadVideoById({ videoId });
     } else {
-      startMusic(id);
+      startMusic(videoId);
     }
+  }
+
+  ytSet.addEventListener("click", () => {
+    const raw = ytInput.value.trim();
+    const id = extractVideoId(raw);
+    if (!id) { alert("Could not parse a YouTube video ID from that URL."); return; }
+    queueVideo(raw, id);
+  });
+
+  ytHistList.addEventListener("change", () => {
+    const opt = ytHistList.selectedOptions[0];
+    const id = opt?.value;
+    if (!id) return;
+    const url = opt.dataset.url || `https://www.youtube.com/watch?v=${id}`;
+    ytInput.value = url;
+    queueVideo(url, id);
+    ytHistList.selectedIndex = 0;
   });
 
   muteBtn.addEventListener("click", () => {
@@ -919,13 +998,17 @@
   const DEFAULT_YT_URL = "https://www.youtube.com/watch?v=FVTXlRxVdEY";
   const savedUrl = localStorage.getItem(YT_KEY) || DEFAULT_YT_URL;
   ytInput.value = savedUrl;
+  renderYtHistory(loadYtHistory());
 
   startOverlay.addEventListener("click", async () => {
     startOverlay.classList.add("hidden");
     try { await video.play(); } catch (_) {}
     startSlideshow();
     const id = extractVideoId(savedUrl);
-    if (id) startMusic(id);
+    if (id) {
+      lastQueuedUrl = savedUrl;
+      startMusic(id);
+    }
   });
 </script>
 
